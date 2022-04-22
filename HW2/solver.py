@@ -50,10 +50,60 @@ def gauss_elim(A: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.atleast_2d(x).T
 
 
+def gauss_seidel(A, b, imax=100, es=0.001, lda=1.0):
+    """Perform Gauss-Seidel iteration for a system Ax = b"""
+    n = A.shape[0]
+    x = np.zeros((n,), dtype=np.float64)
+
+    G = np.copy(A)
+    h = np.copy(b)
+
+    for i in range(0, n):
+        dummy = G[i, i]
+        for j in range(0, n):
+            G[i, j] /= dummy
+        h[i] /= dummy
+    for i in range(0, n):
+        sigma = h[i]
+        for j in range(0, n):
+            if j != i:
+                sigma -= G[i, j] * x[j]
+        x[i] = sigma
+    iterations = 0
+    while True:
+        sentinel = True
+        for i in range(0, n):
+            old = x[i]
+            sigma = h[i]
+            for j in range(0, n):
+                if j != i:
+                    sigma -= G[i, j] * x[j]
+            x[i] = lda * sigma + (1.0 - lda) * old
+            if sentinel and x[i] != 0:
+                ea = abs((x[i] - old) / x[i]) * 100
+                print(ea)
+                print(x)
+                if ea > es:
+                    sentinel = False
+        iterations += 1
+        if sentinel or iterations > imax:
+            return x
+
+
+# The matrix A is diagonally dominant if |Aii| ≥ ∑j≠i |Aij|, or equivalently, 2|Aii| ≥ ∑j |Aij|.
+def diagonally_dominant(A):
+    """check that a matrix is diagonally dominant. if dd, return True, else False"""
+    n = A.shape[0]
+
+    for i in range(0, n):
+        sigma = np.sum(np.absolute(A[i, :i])) + np.sum(np.absolute(A[i, i + 1 :]))
+        if np.absolute(A[i, i]) < sigma:
+            return False
+    return True
+
+
 if __name__ == "__main__":
-    tries = 100
     n = 4
-    err = 0
     A, b = get_rand_Ab(n)
 
     x_mine = gauss_elim(A, b)

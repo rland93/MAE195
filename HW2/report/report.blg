@@ -1,0 +1,15 @@
+[0] Config.pm:311> INFO - This is Biber 2.16
+[1] Config.pm:314> INFO - Logfile is 'report.blg'
+[245] biber-darwin:340> INFO - === Thu Apr 21, 2022, 17:49:26
+[309] Biber.pm:415> INFO - Reading 'report.bcf'
+[989] Biber.pm:952> INFO - Found 3 citekeys in bib section 0
+[1027] Biber.pm:4340> INFO - Processing section 0
+[1066] Biber.pm:4531> INFO - Looking for bibtex format file 'hw2report.bib' for section 0
+[1070] bibtex.pm:1689> INFO - LaTeX decoding ...
+[1203] bibtex.pm:1494> INFO - Found BibTeX data source 'hw2report.bib'
+[2047] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[2047] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[2047] Biber.pm:4168> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
+[2048] Biber.pm:4174> INFO - No sort tailoring available for locale 'en-US'
+[2075] bbl.pm:654> INFO - Writing 'report.bbl' with encoding 'UTF-8'
+[2098] bbl.pm:757> INFO - Output to report.bbl

@@ -1,6 +1,6 @@
 import numpy as np
 import sys, time
-from solver import gauss_elim
+from solver import gauss_elim, gauss_seidel, diagonally_dominant
 
 
 def plot_matr(ax, T, text=False, cmap="RdYlBu_r"):
@@ -97,51 +97,38 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     # formulate the problem from C & C ch 29.
-    n = 3
-
-    top = np.full(shape=(3,), fill_value=100)
-    bottom = np.full(shape=(3,), fill_value=0)
-    left = np.full(shape=(3,), fill_value=50)
-    right = np.full(shape=(3,), fill_value=75)
-
-    A = A_dirichlet(3)
-    b = b_dirichlet(top, bottom, left, right)
-
+    ncc = 3
+    topcc = np.full(shape=(ncc,), fill_value=100)
+    bottomcc = np.full(shape=(ncc,), fill_value=0)
+    leftcc = np.full(shape=(ncc,), fill_value=50)
+    rightcc = np.full(shape=(ncc,), fill_value=75)
+    Acc = A_dirichlet(ncc)
+    if not diagonally_dominant(Acc):
+        raise ValueError("A is not diagonally dominant")
+    bcc = b_dirichlet(topcc, bottomcc, leftcc, rightcc)
     # solve
-    # x = np.linalg.solve(A, b)
-    x = gauss_elim(A, b)
-    T = unpack_solution(x)
+    x_cc = gauss_elim(Acc, bcc)
+    T_cc = unpack_solution(x_cc)
 
-    # verify that the solution is identical to 29.1
-    # fig 29.5, page 871 of C & C.
-    fig1, ax1 = plt.subplots(1, 1)
-    plot_matr(ax1, T)
-    # problem 2
-    for i, n in enumerate([3, 7, 15]):
-        print(f"n = {n}")
-        top = np.full(shape=(n,), fill_value=400)
-        bottom = np.full(shape=(n,), fill_value=300)
-        left = np.full(shape=(n,), fill_value=300)
-        right = np.full(shape=(n,), fill_value=300)
+    # formulate problem 2
+    np2 = 19
+    topp2 = np.full(shape=(np2,), fill_value=400)
+    bottomp2 = np.full(shape=(np2,), fill_value=300)
+    leftp2 = np.full(shape=(np2,), fill_value=300)
+    rightp2 = np.full(shape=(np2,), fill_value=300)
+    Ap2 = A_dirichlet(np2)
+    if not diagonally_dominant(Ap2):
+        raise ValueError("A is not diagonally dominant")
+    bp2 = b_dirichlet(topp2, bottomp2, leftp2, rightp2)
+    # solve
+    x_p2 = gauss_elim(Ap2, bp2)
+    T_p2 = unpack_solution(x_p2)
 
-        A = A_dirichlet(n)
+    fig1, ax1 = plt.subplots(1, 2, tight_layout=True)
+    plot_matr(ax1[0], T_cc, text=True)
+    ax1[0].set_title(r"Fig 29.5, page 871 of C & C")
 
-        print(f"\tA matrix shape: {A.shape}")
-        print(f"\tA matrix size: {sys.getsizeof(A) / 1024} KB")
-
-        b = b_dirichlet(top, bottom, left, right)
-
-        # time & solve the system
-        t0 = time.time()
-        x_np = np.linalg.solve(A, b)
-        t_np = time.time() - t0
-
-        t0 = time.time()
-        x_me = gauss_elim(A, b)
-        t_me = time.time() - t0
-
-        fig, ax = plt.subplots(ncols=2)
-        plot_matr(ax[0], unpack_solution(x_np))
-        ax[0].set_title(f"Numpy Solve Routine: {round(t_np*1000, 0)} ms")
-        plot_matr(ax[1], unpack_solution(x_me))
-        ax[1].set_title(f"Custom Solve Routine: {round(t_me*1000, 0)} ms")
+    plot_matr(ax1[1], T_p2, text=False)
+    ax1[1].set_title(r"Solution Problem 1, $n=19$")
+    fig1.savefig(f"heateqn.png", dpi=200)
+    plt.show()

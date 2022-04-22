@@ -114,5 +114,7 @@
 		\label{fig:complexity}
 	\end{figure}
 	With some digging \cite{ali_mAnswerWhyDoes2015}, we discover that numpy uses the LAPACK solver, which is written in FORTRAN 77. Numpy uses a version of LAPACK maintained by Intel, which uses fast iterative methods on single precision, and only falls back to double precision if solutions cannot be computed. These routines are also optimized for the x86 architecture. This means that the solver is much faster than the naive implementation. \cite{Gesv}
+	\section{Source Code}
+	The source used to generate plots in this report, as well as the LaTeX source, can be found at \url{https://github.com/rland93/MAE195} in the "HW2" folder.
 	\printbibliography
 \end{document}

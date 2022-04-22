@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2022.1.30)  21 APR 2022 17:50
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2022.1.30)  21 APR 2022 17:56
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -558,24 +558,24 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 File: runtime_vs_n.png Graphic file (type bmp)
 <runtime_vs_n.png>
-
-Overfull \hbox (3.05457pt too wide) in paragraph at lines 118--118
+ [4] [5]
+Overfull \hbox (3.05457pt too wide) in paragraph at lines 120--120
 \T1/lmtt/m/n/10 develop / documentation / onemkl -[] developer -[] reference -[] c / top / lapack -[]
  []
 
 
-Overfull \hbox (14.55453pt too wide) in paragraph at lines 118--118
+Overfull \hbox (14.55453pt too wide) in paragraph at lines 120--120
 \T1/lmtt/m/n/10 routines / lapack -[] linear -[] equation -[] routines / lapack -[] linear -[] equation -[]
  []
 
-[4] [5]
-Overfull \hbox (0.77802pt too wide) in paragraph at lines 118--118
+
+Overfull \hbox (0.77802pt too wide) in paragraph at lines 120--120
 \T1/lmr/m/it/10 Ma-trix In-ver-sions than Numpy.Linalg.Inv()?"\T1/lmr/m/n/10 . Stack Over-flow. July 7, 2015.
  []
 
 [6] (./report.aux)
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: FB789B4488200AB97FF149E161631476;300.
+(rerunfilecheck)             Checksum: 01613E23E70537FFB3C2083218CAEFE1;401.
 Package logreq Info: Writing requests to 'report.run.xml'.
 \openout1 = `report.run.xml'.
 
@@ -583,10 +583,10 @@ Package logreq Info: Writing requests to 'report.run.xml'.
 Here is how much of TeX's memory you used:
  17899 strings out of 476919
  311692 string characters out of 5821840
- 1049000 words of memory out of 5000000
+ 1049122 words of memory out of 5000000
  37696 multiletter control sequences out of 15000+600000
  447471 words of font info for 68 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 73i,9n,77p,770b,4769s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,9n,77p,770b,4674s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on report.xdv (6 pages, 16684 bytes).
+Output written on report.xdv (6 pages, 17204 bytes).

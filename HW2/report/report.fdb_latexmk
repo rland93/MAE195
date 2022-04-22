@@ -1,16 +1,16 @@
 # Fdb version 3
-["biber report"] 1650588562 "report.bcf" "report.bbl" "report" 1650588608
+["biber report"] 1650588562 "report.bcf" "report.bbl" "report" 1650589004
   "hw2report.bib" 1650587698 1752 4467c72ea89b166369f1986331b5f60e ""
-  "report.bcf" 1650588606 107353 c29f8bb85cd6010e536f0032d0ee325c "xelatex"
+  "report.bcf" 1650589002 107353 c29f8bb85cd6010e536f0032d0ee325c "xelatex"
   (generated)
   "report.bbl"
   "report.blg"
-["xdvipdfmx"] 1650588606 "report.xdv" "report.pdf" "report" 1650588608
-  "report.xdv" 1650588606 16684 a5cd7382579d3316d61b980a88b7e5f4 "xelatex"
+["xdvipdfmx"] 1650589002 "report.xdv" "report.pdf" "report" 1650589004
+  "report.xdv" 1650589002 17204 5945d2a2ff84d9a25802bd7fa6c9de20 "xelatex"
   (generated)
   "report.pdf"
-["xelatex"] 1650588604 "/Users/ms/prg/195hw/HW2/report/report.tex" "report.xdv" "report" 1650588608
-  "/Users/ms/prg/195hw/HW2/report/report.tex" 1650588601 7958 8e0c0995f2392cd6d50792d4b49ce18b ""
+["xelatex"] 1650588999 "/Users/ms/prg/195hw/HW2/report/report.tex" "report.xdv" "report" 1650589004
+  "/Users/ms/prg/195hw/HW2/report/report.tex" 1650588999 8138 d16fd465de5b80b5cf6a39a37fec024f ""
   "/usr/local/texlive/2021/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1136768653 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/local/texlive/2021/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -123,16 +123,16 @@
   "heateqn.png" 1650588395 52703 d5ab34706436cae588f32144d7294861 ""
   "heateqn_31x31.png" 1650584092 26817 fbc3fe3eeebd91d8e3d87a9d677b6195 ""
   "rel_errs.png" 1650522227 121221 42c7e1cf7cb9786ea3213691504484c1 ""
-  "report.aux" 1650588606 3842 4334d0bc004c483826d1a7edec1f73f9 "xelatex"
+  "report.aux" 1650589002 4002 c5b949b0569bd48ce59abc6f79410e7f "xelatex"
   "report.bbl" 1650588567 4658 ad8d3e7c7c1e4276da4723e597f8be0c "biber report"
-  "report.out" 1650588606 300 fb789b4488200ab97ff149e161631476 "xelatex"
-  "report.run.xml" 1650588606 2353 4b8bbe0850b93316fa1435f33430bdb0 "xelatex"
-  "report.tex" 1650588601 7958 8e0c0995f2392cd6d50792d4b49ce18b ""
+  "report.out" 1650589002 401 01613e23e70537ffb3c2083218caefe1 "xelatex"
+  "report.run.xml" 1650589002 2353 4b8bbe0850b93316fa1435f33430bdb0 "xelatex"
+  "report.tex" 1650588999 8138 d16fd465de5b80b5cf6a39a37fec024f ""
   "runtime_vs_n.png" 1650587383 76113 e88c1d3efd7a5b114146a6955954de56 ""
   (generated)
-  "report.aux"
+  "report.out"
   "report.bcf"
   "report.run.xml"
-  "report.out"
+  "report.aux"
   "report.log"
   "report.xdv"

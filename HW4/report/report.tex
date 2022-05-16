@@ -1,0 +1,77 @@
+\documentclass[10pt,letterpaper,notitlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{derivative}
+\usepackage{cleveref}
+\usepackage[backend=biber]{biblatex}
+% \addbibresource{hw4.bib}
+\author{Mike Sutherland}
+\title{MAE 195 HW 4 Assignment}
+\begin{document}
+	\maketitle
+	% \printbibliography
+	\section{Problem 1}
+	We consider a 2nd order ordinary differential equation of the form
+	\begin{equation}
+		\begin{aligned}
+			\ddot{x} + \alpha \dot{x} + \omega_0^2 x &= 0 \\
+			x(0) &= x_0 \\
+			\dot{x}(0) &= \dot{x}_0
+		\end{aligned}
+		\label{eq:problem1}
+	\end{equation}
+	We can re-write this system in state-space form:
+	\begin{equation}
+		\begin{bmatrix}
+			\dot{x} \\
+			\ddot{x}
+		\end{bmatrix}
+		=
+		\begin{bmatrix}
+			0 & 1 \\
+			-\omega_0^2 & -\alpha
+		\end{bmatrix}
+		\begin{bmatrix}
+			x \\
+			\dot{x}
+		\end{bmatrix}
+	\end{equation}
+	Let's attach some names to these terms. We will rename our state $\begin{bmatrix}
+		x \\
+		\dot{x}
+	\end{bmatrix}$ simply to $x$. Then, our equation takes the form:
+	\begin{equation}
+		\begin{aligned}
+			\dot{x} &= A x \\
+			\frac{dx}{dt} &= A x(t)
+		\end{aligned}
+	\end{equation}
+	In this form, the properties of $A$ will determine the behavior of the system and its numerical attributes. We begin with the eigenvalues of A:
+	\begin{equation}
+		\begin{aligned}
+			\lambda_1 &= -\frac{\alpha}{2} - \frac{\sqrt{\alpha^2 - 4 \omega_0^2}}{2} \\
+			\lambda_2 &= -\frac{\alpha}{2} + \frac{\sqrt{\alpha^2 - 4 \omega_0^2}}{2}
+		\end{aligned}
+	\end{equation}
+	Depending on the sign and size of $\alpha$ and $\omega_0$, the eigenvalues will either be real or complex. Let us assume that both $\alpha$ and $\omega_0$ are positive, as they would be in a physical spring-mass system. In that case, if $\alpha^2 \leq 4 \omega_0^2$, then we have complex eigenvalues. (physically, these will produce some oscillations in the spring).
+	The spectral condition number is:
+	\begin{equation}
+		\begin{aligned}
+			\kappa &= \frac{|\text{Re}(\lambda_1)|}{|\text{Re}(\lambda_2)|} \\
+			\kappa &= \frac{| \text{Re}(\alpha + \sqrt{\alpha^2 - 4 \omega_0^2})|}{|\text{Re}(\alpha - \sqrt{\alpha^2 - 4 \omega_0^2})|}
+		\end{aligned}
+	\end{equation}
+	So, we have a couple of cases. If $\alpha^2 \leq 4 \omega_0^2$, and we have complex eigenvalues, then the real components of the eigenvalues are identical: $\alpha=\alpha$. Therefore, the spectral condition number is 1.
+	If the eigenvalues are not complex, the spectral condition number will be somewhat greater than 1, depending on the values of $\alpha$ and $\omega_0$.
+	\section{Problem 2}
+	The analytic solution of \cref{eq:problem1} is:
+	\begin{equation}
+		x(t) = c_1 e^{\lambda_1 t} + c_2 e^{\lambda_2 t}
+	\end{equation}
+
+\end{document}

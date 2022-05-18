@@ -1,8 +1,55 @@
+import math
+
+# whether to show figures
+SHOW = True
+# whether to save figures
+SAVE = False
+# dpi to save figures
+DPI = 200
+
+# size of large, small figures
+large_figure = (8, 8)
+small_figure = (6, 4)
+
+# final time to evaluate
+t_final = 4.0
+
+# 3.1 definition
+CASE1 = {
+    "alpha": 1.0,
+    "omega": 1.0,
+    "x0": 1.0,
+    "dx0": 0.0,
+    "hs": [0.1, 0.01, 0.001],
+}
+# 3.2 definition
+CASE2 = {
+    "alpha": 1001.0,
+    "omega": math.sqrt(1000.0),
+    "x0": 1.0,
+    "dx0": 0.0,
+    "hs": [0.00201, 0.00200, 0.00199],
+}
+
+# which problems to show
+PLOTS = {
+    "3.1": True,
+    "3.2": True,
+    "4.1": True,
+    "4.2": True,
+    "5.1": True,
+    "5.2": True,
+}
+
 import numpy as np
 from cmath import sqrt
 from enum import Enum
-import math
 import matplotlib.pyplot as plt
+
+
+################################################
+################################################
+################################################
 
 # set font sizes
 plt.rcParams.update({"font.size": 9})
@@ -474,267 +521,276 @@ def make_err_plot(ax, problem: dict, errors: list, method: str):
 
 
 if __name__ == "__main__":
-    # import matplotlib
+    figures = []
 
-    # matplotlib.rcParams["axes.prop_cycle"] = matplotlib.cycler(
-    #     color=["r", "g", "b", "y"]
-    # )
+    for case in (CASE1, CASE2):
+        case["cond"] = condition(case["alpha"], case["omega"])
 
-    large_figure = (7, 4.5)
-    small_figure = (5, 3)
-    t_final = 4.0
-    # 3.1 definition
-    CASE1 = {
-        "alpha": 1.0,
-        "omega": 1.0,
-        "x0": 1.0,
-        "dx0": 0.0,
-        "hs": [0.1, 0.01, 0.001],
-        "cond": condition(1.0, 1.0),
-    }
-    # 3.2 definition
-    CASE2 = {
-        "alpha": 1001.0,
-        "omega": math.sqrt(1000.0),
-        "x0": 1.0,
-        "dx0": 0.0,
-        "hs": [0.00201, 0.00200, 0.00199],
-        "cond": condition(1001.0, math.sqrt(1000.0)),
-    }
     ##################################################
     #####               3.1                     ######
     ##################################################
-    err_31 = []
-    fig31, axs31 = plt.subplots(
-        nrows=len(CASE1["hs"]),
-        ncols=2,
-        sharex=True,
-        tight_layout=True,
-        figsize=large_figure,
-    )
-    fig31.suptitle(get_fig_title("3.1", CASE1["cond"]))
-    for (h, ax) in zip(CASE1["hs"], axs31):
-        ts = get_ts_array(t_final, h)
-        # get analytic function
-        an, _ = analytic_soln(
-            CASE1["alpha"],
-            CASE1["omega"],
-            CASE1["x0"],
-            CASE1["dx0"],
+    if PLOTS["3.1"]:
+        err_31 = []
+        fig31, axs31 = plt.subplots(
+            nrows=len(CASE1["hs"]),
+            ncols=2,
+            sharex=True,
+            tight_layout=True,
+            figsize=large_figure,
+            num="Problem 3.1 x(t)",
         )
-        # get analytic solution
-        ys_an = an(ts)
-        # get euler solution
-        ys_nm = euler(
-            ts,
-            CASE1["alpha"],
-            CASE1["omega"],
-            CASE1["x0"],
-            CASE1["dx0"],
+        fig31.suptitle(get_fig_title("3.1", CASE1["cond"]))
+        for (h, ax) in zip(CASE1["hs"], axs31):
+            ts = get_ts_array(t_final, h)
+            # get analytic function
+            an, _ = analytic_soln(
+                CASE1["alpha"],
+                CASE1["omega"],
+                CASE1["x0"],
+                CASE1["dx0"],
+            )
+            # get analytic solution
+            ys_an = an(ts)
+            # get euler solution
+            ys_nm = euler(
+                ts,
+                CASE1["alpha"],
+                CASE1["omega"],
+                CASE1["x0"],
+                CASE1["dx0"],
+            )
+            # get error
+            err_31.append(abs(ys_an[-1] - ys_nm[-1, 0]))
+            # plot numerical solution
+            make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Euler")
+            # plot analytic solution
+            ax[0].plot(ts, ys_an, linestyle=":", label="Analytic")
+            # write legend for both plots
+            for a in ax:
+                a.legend()
+        fig31err, ax31err = plt.subplots(
+            figsize=small_figure,
+            num="Problem 3.1 Error Analysis",
         )
-        # get error
-        err_31.append(abs(ys_an[-1] - ys_nm[-1, 0]))
-        # plot numerical solution
-        make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Euler")
-        # plot analytic solution
-        ax[0].plot(ts, ys_an, linestyle=":", label="Analytic")
-        # write legend for both plots
-        for a in ax:
-            a.legend()
-    fig31err, ax31err = plt.subplots(figsize=small_figure)
-    make_err_plot(ax31err, CASE1, err_31, "Euler")
-    ax31err.set_title("Error vs Step-size, p3.1")
+        make_err_plot(ax31err, CASE1, err_31, "Euler")
+        ax31err.set_title("Error vs Step-size, p3.1")
+        figures += [fig31err, fig31]
 
     ##################################################
     #####               3.2                     ######
     ##################################################
-    err_32 = []
-    ###### ensemble plot
-    fig32, axs32 = plt.subplots(
-        nrows=len(CASE2["hs"]),
-        ncols=2,
-        sharex=True,
-        tight_layout=True,
-        figsize=large_figure,
-    )
-    fig32.suptitle(get_fig_title("3.2", CASE2["cond"]))
-    for (h, ax) in zip(CASE2["hs"], axs32):
-        ts = get_ts_array(t_final, h)
-        an, _ = analytic_soln(
-            CASE2["alpha"],
-            CASE2["omega"],
-            CASE2["x0"],
-            CASE2["dx0"],
+    if PLOTS["3.2"]:
+        err_32 = []
+        ###### ensemble plot
+        fig32, axs32 = plt.subplots(
+            nrows=len(CASE2["hs"]),
+            ncols=2,
+            sharex=True,
+            tight_layout=True,
+            figsize=large_figure,
+            num="Problem 3.2 - Stiff Problem Explicit x(t)",
         )
-        ys_an = an(ts)
-        ys_nm = euler(
-            ts,
-            CASE2["alpha"],
-            CASE2["omega"],
-            CASE2["x0"],
-            CASE2["dx0"],
+        fig32.suptitle(get_fig_title("3.2", CASE2["cond"]))
+        for (h, ax) in zip(CASE2["hs"], axs32):
+            ts = get_ts_array(t_final, h)
+            an, _ = analytic_soln(
+                CASE2["alpha"],
+                CASE2["omega"],
+                CASE2["x0"],
+                CASE2["dx0"],
+            )
+            ys_an = an(ts)
+            ys_nm = euler(
+                ts,
+                CASE2["alpha"],
+                CASE2["omega"],
+                CASE2["x0"],
+                CASE2["dx0"],
+            )
+            # get error
+            err_32.append(abs(ys_an[-1] - ys_nm[-1, 0]))
+            # plot numerical solution
+            make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Euler")
+            # plot analytic solution
+            ax[0].plot(ts, ys_an, linestyle=":", label="Analytic")
+            # legend for both plots
+            for a in ax:
+                a.legend()
+        ##### error
+        fig32err, ax32err = plt.subplots(
+            figsize=small_figure,
+            num="Problem 3.2 - Stiff Problem Explicit Error Analysis",
         )
-        # get error
-        err_32.append(abs(ys_an[-1] - ys_nm[-1, 0]))
-        # plot numerical solution
-        make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Euler")
-        # plot analytic solution
-        ax[0].plot(ts, ys_an, linestyle=":", label="Analytic")
-        # legend for both plots
-        for a in ax:
-            a.legend()
-    ##### error
-    fig32err, ax32err = plt.subplots(figsize=small_figure)
-    make_err_plot(ax32err, CASE2, err_32, "Euler")
-    ax32err.set_title("Error vs Step-size, p3.2")
-    ax32err.legend()
+        make_err_plot(ax32err, CASE2, err_32, "Euler")
+        ax32err.set_title("Error vs Step-size, p3.2")
+        ax32err.legend()
+        figures += [fig32err, fig32]
     ##################################################
     #####               4.1                     ######
     ##################################################
-    err_41 = []
-    ###### ensemble plot
-    fig41, axs41 = plt.subplots(
-        nrows=len(CASE1["hs"]),
-        ncols=2,
-        sharex=True,
-        tight_layout=True,
-        figsize=large_figure,
-    )
-    fig41.suptitle(get_fig_title("4.1", CASE1["cond"]))
-    for (h, ax) in zip(CASE1["hs"], axs41):
-        ts = get_ts_array(t_final, h)
-        # get analytic function
-        an, _ = analytic_soln(
-            CASE1["alpha"],
-            CASE1["omega"],
-            CASE1["x0"],
-            CASE1["dx0"],
+    if PLOTS["4.1"]:
+        err_41 = []
+        ###### ensemble plot
+        fig41, axs41 = plt.subplots(
+            nrows=len(CASE1["hs"]),
+            ncols=2,
+            sharex=True,
+            tight_layout=True,
+            figsize=large_figure,
+            num="Problem 4.1 - RK2 x(t)",
         )
-        # get analytic solution
-        ys_an = an(ts)
-        # get euler solution
-        ys_nm = rk2(
-            ts,
-            CASE1["alpha"],
-            CASE1["omega"],
-            CASE1["x0"],
-            CASE1["dx0"],
-        )
-        # get error
-        err_41.append(abs(ys_an[-1] - ys_nm[-1, 0]))
-        # plot numerical solution
-        make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "RK2")
-        # plot analytic solution
-        ax[0].plot(ts, ys_an, linestyle=":", label="Analytic")
-        # write legend for both plots
-        for a in ax:
-            a.legend()
-    ##### Error plot
-    # this time, we add the rk2 error to the already-made
-    # euler error plot above.
-    ax31err.plot(CASE1["hs"], err_41, label="RK2")
-    ax31err.scatter(CASE1["hs"], err_41, label="RK2")
-    ax31err.legend()
+        fig41.suptitle(get_fig_title("4.1", CASE1["cond"]))
+        for (h, ax) in zip(CASE1["hs"], axs41):
+            ts = get_ts_array(t_final, h)
+            # get analytic function
+            an, _ = analytic_soln(
+                CASE1["alpha"],
+                CASE1["omega"],
+                CASE1["x0"],
+                CASE1["dx0"],
+            )
+            # get analytic solution
+            ys_an = an(ts)
+            # get euler solution
+            ys_nm = rk2(
+                ts,
+                CASE1["alpha"],
+                CASE1["omega"],
+                CASE1["x0"],
+                CASE1["dx0"],
+            )
+            # get error
+            err_41.append(abs(ys_an[-1] - ys_nm[-1, 0]))
+            # plot numerical solution
+            make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "RK2")
+            # plot analytic solution
+            ax[0].plot(ts, ys_an, linestyle=":", label="Analytic")
+            # write legend for both plots
+            for a in ax:
+                a.legend()
+        ##### Error plot
+        # this time, we add the rk2 error to the already-made
+        # euler error plot above.
+        ax31err.plot(CASE1["hs"], err_41, label="RK2")
+        ax31err.scatter(CASE1["hs"], err_41, label="RK2")
+        ax31err.legend()
+        figures += [fig41]
     ##################################################
     #####               5.1                     ######
     ##################################################
-    err_51 = []
-    ### ensemble plot
-    fig51, axs51 = plt.subplots(
-        nrows=len(CASE1["hs"]),
-        ncols=2,
-        sharex=True,
-        tight_layout=True,
-        figsize=large_figure,
-    )
-    fig51.suptitle(get_fig_title("5.1", CASE1["cond"]))
+    if PLOTS["5.1"]:
+        err_51 = []
+        ### ensemble plot
+        fig51, axs51 = plt.subplots(
+            nrows=len(CASE1["hs"]),
+            ncols=2,
+            sharex=True,
+            tight_layout=True,
+            figsize=large_figure,
+            num="Problem 5.1 Adams-Moulton x(t)",
+        )
+        fig51.suptitle(get_fig_title("5.1", CASE1["cond"]))
 
-    for (h, ax) in zip(CASE1["hs"], axs51):
-        ts = get_ts_array(t_final, h)
-        # get analytic function
-        an, _ = analytic_soln(
-            CASE1["alpha"],
-            CASE1["omega"],
-            CASE1["x0"],
-            CASE1["dx0"],
+        for (h, ax) in zip(CASE1["hs"], axs51):
+            ts = get_ts_array(t_final, h)
+            # get analytic function
+            an, _ = analytic_soln(
+                CASE1["alpha"],
+                CASE1["omega"],
+                CASE1["x0"],
+                CASE1["dx0"],
+            )
+            # get analytic solution
+            ys_an = an(ts)
+            # get AM solution
+            A = np.array([[0, 1], [-(CASE1["omega"] ** 2), -CASE1["alpha"]]])
+            ys_nm = adams_moulton(
+                ts,
+                h,
+                A,
+                np.array([CASE1["x0"], CASE1["dx0"]]),
+            )
+            # get error
+            err_51.append(abs(ys_an[-1] - ys_nm[-1, 0]))
+            # plot numerical solution
+            make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Adams-Moulton")
+            # plot analytic solution
+            ax[0].plot(ts, ys_an, label="Analytic")
+            # write legend for both plots
+            for a in ax:
+                a.legend()
+
+        #### Error Plot
+        fig51err, axs51err = plt.subplots(
+            figsize=small_figure,
+            num="Problem 5.1 Adams-Moulton Error Analysis",
         )
-        # get analytic solution
-        ys_an = an(ts)
-        # get AM solution
-        A = np.array([[0, 1], [-(CASE1["omega"] ** 2), -CASE1["alpha"]]])
-        ys_nm = adams_moulton(
-            ts,
-            h,
-            A,
-            np.array([CASE1["x0"], CASE1["dx0"]]),
+        make_err_plot(
+            axs51err,
+            CASE1,
+            err_51,
+            "Adams-Moulton",
         )
-        # get error
-        err_51.append(abs(ys_an[-1] - ys_nm[-1, 0]))
-        # plot numerical solution
-        make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Adams-Moulton")
-        # plot analytic solution
-        ax[0].plot(ts, ys_an, label="Analytic")
-        # write legend for both plots
-        for a in ax:
-            a.legend()
-    #### Error Plot
-    fig51err, axs51err = plt.subplots(figsize=small_figure)
-    make_err_plot(axs51err, CASE1, err_51, "Adams-Moulton")
-    axs51err.set_title("Error vs Step-size, p5.1")
-    axs51err.legend()
+        axs51err.set_title("Error vs Step-size, p5.1")
+        axs51err.legend()
+        figures += [fig51err, fig51]
 
     ##################################################
     #####               5.2                     ######
     ##################################################
-    # change case 2 step sizes
-    CASE2["hs"] = [0.1, 0.01, 0.001]
-    err_52 = []
-    ### Ensemble plot x(t)
-    fig52, axs52 = plt.subplots(
-        nrows=len(CASE2["hs"]),
-        ncols=2,
-        sharex=True,
-        tight_layout=True,
-        figsize=large_figure,
-    )
-    fig52.suptitle(get_fig_title("5.2", CASE2["cond"]))
-
-    for (h, ax) in zip(CASE2["hs"], axs52):
-        ts = get_ts_array(t_final, h)
-        # get analytic function
-        an, _ = analytic_soln(
-            CASE2["alpha"],
-            CASE2["omega"],
-            CASE2["x0"],
-            CASE2["dx0"],
+    if PLOTS["5.2"]:
+        # change case 2 step sizes
+        CASE2["hs"] = [0.1, 0.01, 0.001]
+        err_52 = []
+        ### Ensemble plot x(t)
+        fig52, axs52 = plt.subplots(
+            nrows=len(CASE2["hs"]),
+            ncols=2,
+            sharex=True,
+            tight_layout=True,
+            figsize=large_figure,
+            num="Problem 5.2 - Stiff Problem Adams-Moulton x(t)",
         )
-        # get analytic solution
-        ys_an = an(ts)
-        # get AM solution
-        A = np.array([[0, 1], [-(CASE2["omega"] ** 2), -CASE2["alpha"]]])
-        ys_nm = adams_moulton(
-            ts,
-            h,
-            A,
-            np.array([CASE2["x0"], CASE2["dx0"]]),
-        )
-        # get error
-        err_52.append(abs(ys_an[-1] - ys_nm[-1, 0]))
-        # plot numerical solution
-        make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Adams-Moulton")
-        # plot analytic solution
-        ax[0].plot(ts, ys_an, label="Analytic")
-        # write legend for both plots
-        for a in ax:
-            a.legend()
-    # Error Plot
-    fig52err, axs52err = plt.subplots(figsize=small_figure)
-    make_err_plot(axs52err, CASE2, err_52, "Adams-Moulton")
-    axs52err.set_title("Error vs Step-size, p5.2")
-    axs52err.legend()
+        fig52.suptitle(get_fig_title("5.2", CASE2["cond"]))
 
-    SHOW = True
-    SAVE = True
+        for (h, ax) in zip(CASE2["hs"], axs52):
+            ts = get_ts_array(t_final, h)
+            # get analytic function
+            an, _ = analytic_soln(
+                CASE2["alpha"],
+                CASE2["omega"],
+                CASE2["x0"],
+                CASE2["dx0"],
+            )
+            # get analytic solution
+            ys_an = an(ts)
+            # get AM solution
+            A = np.array([[0, 1], [-(CASE2["omega"] ** 2), -CASE2["alpha"]]])
+            ys_nm = adams_moulton(
+                ts,
+                h,
+                A,
+                np.array([CASE2["x0"], CASE2["dx0"]]),
+            )
+            # get error
+            err_52.append(abs(ys_an[-1] - ys_nm[-1, 0]))
+            # plot numerical solution
+            make_xt_numeric_plot(ax, ts, ys_an, ys_nm, "Adams-Moulton")
+            # plot analytic solution
+            ax[0].plot(ts, ys_an, label="Analytic")
+            # write legend for both plots
+            for a in ax:
+                a.legend()
+        # Error Plot
+        fig52err, axs52err = plt.subplots(
+            figsize=small_figure,
+            num="Problem 5.2 - Stiff Problem Adams-Moulton Error Analysis",
+        )
+        make_err_plot(axs52err, CASE2, err_52, "Adams-Moulton")
+        axs52err.set_title("Error vs Step-size, p5.2")
+        axs52err.legend()
+        figures += [fig52err, fig52]
+
     if SHOW:
         plt.show()
     if SAVE:
@@ -742,27 +798,5 @@ if __name__ == "__main__":
 
         figdir = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / "figures"
         os.makedirs(figdir, exist_ok=True)
-        figs = (
-            fig31,
-            fig31err,
-            fig32,
-            fig32err,
-            fig41,
-            fig51,
-            fig51err,
-            fig52,
-            fig52err,
-        )
-        names = (
-            "p31",
-            "p31err",
-            "p32",
-            "p32err",
-            "p41",
-            "p51",
-            "p51err",
-            "p52",
-            "p52err",
-        )
-        for name, fig in zip(names, figs):
-            fig.savefig(f"{figdir}/{name}.png", dpi=300)
+        for fig in figures:
+            fig.savefig(figdir / (fig.get_label() + ".png"), dpi=DPI)

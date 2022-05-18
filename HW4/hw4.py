@@ -480,8 +480,8 @@ if __name__ == "__main__":
     #     color=["r", "g", "b", "y"]
     # )
 
-    large_figure = (10, 7)
-    small_figure = (9, 6)
+    large_figure = (7, 4.5)
+    small_figure = (5, 3)
     t_final = 4.0
     # 3.1 definition
     CASE1 = {
@@ -489,7 +489,7 @@ if __name__ == "__main__":
         "omega": 1.0,
         "x0": 1.0,
         "dx0": 0.0,
-        "hs": [0.1, 0.01, 0.001, 0.005],
+        "hs": [0.1, 0.01, 0.001],
         "cond": condition(1.0, 1.0),
     }
     # 3.2 definition
@@ -498,7 +498,7 @@ if __name__ == "__main__":
         "omega": math.sqrt(1000.0),
         "x0": 1.0,
         "dx0": 0.0,
-        "hs": [0.00201, 0.00200, 0.00199, 0.0015],
+        "hs": [0.00201, 0.00200, 0.00199],
         "cond": condition(1001.0, math.sqrt(1000.0)),
     }
     ##################################################
@@ -686,6 +686,8 @@ if __name__ == "__main__":
     ##################################################
     #####               5.2                     ######
     ##################################################
+    # change case 2 step sizes
+    CASE2["hs"] = [0.1, 0.01, 0.001]
     err_52 = []
     ### Ensemble plot x(t)
     fig52, axs52 = plt.subplots(
@@ -740,7 +742,27 @@ if __name__ == "__main__":
 
         figdir = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / "figures"
         os.makedirs(figdir, exist_ok=True)
-        figs = (fig31, fig31err, fig41, fig51, fig51err, fig52, fig52err)
-        names = ("p31", "p31err", "p41", "p51", "p51err", "p52", "p52err")
+        figs = (
+            fig31,
+            fig31err,
+            fig32,
+            fig32err,
+            fig41,
+            fig51,
+            fig51err,
+            fig52,
+            fig52err,
+        )
+        names = (
+            "p31",
+            "p31err",
+            "p32",
+            "p32err",
+            "p41",
+            "p51",
+            "p51err",
+            "p52",
+            "p52err",
+        )
         for name, fig in zip(names, figs):
             fig.savefig(f"{figdir}/{name}.png", dpi=300)

@@ -35,6 +35,7 @@ def backsub(G, h, n, x):
 
 def gauss_elim(A: np.ndarray, b: np.ndarray) -> np.ndarray:
     """Perform Gauss Elimination for a system Ax = b"""
+    print(f"Gauss elim on A: {A.shape}, b: {b.shape}...")
     n = A.shape[0]
     x = np.zeros((n,), dtype=np.float64)
 
@@ -47,6 +48,7 @@ def gauss_elim(A: np.ndarray, b: np.ndarray) -> np.ndarray:
     # encapsulate for the profiler
     G, h, x = backsub(G, h, n, x)
 
+    print("Done!")
     return np.atleast_2d(x).T
 
 
@@ -102,8 +104,21 @@ def diagonally_dominant(A):
     return True
 
 
+def so(tup):
+    return gauss_elim(*tup)
+
+
 if __name__ == "__main__":
-    n = 4
+    from multiprocessing import Pool
+
+    n = 1000
+
+    rand_abs = (get_rand_Ab(n) for _ in range(0, 100))
+
+    with Pool() as p:
+        answ = p.map(so, [(A, b) for A, b in rand_abs])
+
+    """
     A, b = get_rand_Ab(n)
 
     x_mine = gauss_elim(A, b)
@@ -111,3 +126,4 @@ if __name__ == "__main__":
     print("=============")
     print(f"x_mine: \n{x_mine}")
     print(f"x_theirs: \n{x_theirs}")
+    """

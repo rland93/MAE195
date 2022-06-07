@@ -33,10 +33,10 @@ CASE2 = {
 
 # which problems to show
 PLOTS = {
-    "3.1": True,
-    "3.2": True,
-    "4.1": True,
-    "4.2": True,
+    "3.1": False,
+    "3.2": False,
+    "4.1": False,
+    "4.2": False,
     "5.1": True,
     "5.2": True,
 }
@@ -420,7 +420,6 @@ def adams_moulton(ts, h, A, y0):
         # solve system at each timestep
         ys[i + 1, :] = np.linalg.solve(RHS, LHS @ ys[i, :])
 
-        # ys[i + 1, :] = RHS_INV @ (LHS @ ys[i, :])
     return ys
 
 
@@ -679,6 +678,7 @@ if __name__ == "__main__":
     #####               5.1                     ######
     ##################################################
     if PLOTS["5.1"]:
+        CASE1["hs"] = [0.25, 0.1, 0.01, 0.001]
         err_51 = []
         ### ensemble plot
         fig51, axs51 = plt.subplots(
@@ -740,7 +740,7 @@ if __name__ == "__main__":
     ##################################################
     if PLOTS["5.2"]:
         # change case 2 step sizes
-        CASE2["hs"] = [0.1, 0.01, 0.001]
+        CASE2["hs"] = [0.25, 0.1, 0.01, 0.001]
         err_52 = []
         ### Ensemble plot x(t)
         fig52, axs52 = plt.subplots(

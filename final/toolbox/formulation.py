@@ -9,6 +9,15 @@ def get_h(x0: float, xf: float, n: int) -> float:
     return (xf - x0) / n
 
 
+def const_step_grid(x0: float, xf: float, h: float):
+    x = x0
+    xs = [x]
+    while x < xf:
+        x += h
+        xs.append(x)
+    return np.array(xs)
+
+
 def solve_ss_analytic(
     x0: float,
     xf: float,
@@ -56,6 +65,25 @@ def grid1d(x0: float, xf: float, n: int = 8) -> np.ndarray:
     return np.linspace(x0, xf, n + 1)
 
 
+def get_A(n, beta, h):
+    A = np.zeros((n, n))
+    # k=0 and k=n correspond to left, right boundary
+    A[0, 0] = 1.0
+    A[n - 1, n - 1] = 1.0
+    # interior grid points
+    for k in range(1, n - 1):
+        A[k, k] = +2 / h**2 + beta
+        A[k, k - 1] = -1.0 / h**2
+        A[k, k + 1] = -1.0 / h**2
+    return A
+
+
+def get_b(n, beta, theta0, thetaf):
+    b = beta * np.ones((n,))
+    b[0], b[n - 1] = theta0, thetaf
+    return b
+
+
 def get_Ab(
     xi: np.ndarray,
     fluid: Union[np.ndarray, float],
@@ -68,30 +96,18 @@ def get_Ab(
     n = xi.shape[0]
     # get tridiagonal matrix
     h = (xi[n - 1] - xi[0]) / (n - 1)
-    A = np.zeros((n, n))
-    # k=0 and k=n correspond to left, right boundary
-    A[0, 0] = 1.0
-    A[n - 1, n - 1] = 1.0
-    # interior grid points
-    for k in range(1, n - 1):
-        A[k, k] = +2 / h**2 + beta
-        A[k, k - 1] = -1.0 / h**2
-        A[k, k + 1] = -1.0 / h**2
+    A = get_A(n, beta, h)
 
-    # get b vector
-    b = np.empty((n,))
-    # set ends to BCs
-    # if float is passed in, just fill interior points
+    b = get_b(n, beta, theta0, thetaf)
+    # fill interior points
     if isinstance(fluid, float):
-        b = np.full(b.shape[0], fill_value=fluid)
-    # else, fill from array values
+        b[1 : n - 1] *= fluid
+    # fill from array values
     elif isinstance(fluid, np.ndarray):
-        b = fluid
+        b[1 : n - 1] *= fluid[1 : n - 1]
     else:
         # type
         raise TypeError(f"fluid must be either float or ndarray (type:{type(fluid)}")
-    b *= beta
-    b[0], b[n - 1] = theta0, thetaf
     return A, b
 
 
@@ -103,54 +119,6 @@ def gaussian_plume(
 ) -> np.ndarray:
     """get an array of size `xi` that represents a temperature plume in theta_f centered at xi0, with amplitude A, and with width sigma"""
     return A * np.exp(-((xi - xi0) ** 2) / (2 * sigma**2))
-
-
-def solve_time_euler(
-    xi: np.ndarray,
-    taus: np.ndarray,
-    beta: float,
-    theta0: float,
-    thetaf: float,
-    fluid_eqn: callable,
-) -> tuple:
-    # get steady state A,b
-    ssA, ssb = get_Ab(xi, fluid_eqn(taus[0], xi), beta, theta0, thetaf)
-    # solve SS system to get tau=0 I.C.
-    ss_theta = solvers.tdma(ssA, ssb)
-    solution = np.empty(shape=(taus.shape[0], xi.shape[0]))
-    # first member of solution array is the I.C.
-    solution[0, :] = ss_theta
-
-    # prefill arrays
-    n = xi.shape[0]
-    m = taus.shape[0]
-    h = (xi[n - 1] - xi[0]) / (n - 1)
-    t = (taus[m - 1] - taus[0]) / (m - 1)
-
-    # first member of fluids array is fluid state at tau=0
-    fluids = np.empty(shape=(m, n))
-    fluids[0, :] = fluid_eqn(taus[0], xi)
-
-    for j, tau in enumerate(taus[1:]):
-        fluid_t = fluid_eqn(tau, xi)
-        A = np.empty((n, n))
-        A[0, 0] = 1.0
-        A[n - 1, n - 1] = 1.0
-        for k in range(1, n - 1):
-            A[k, k] = 1 - (2 * t / h**2) - (beta * t)
-            A[k, k - 1] = t / h**2
-            A[k, k + 1] = t / h**2
-        theta_j = solution[j, :]
-
-        b = np.empty_like(theta_j)
-        b[0] = theta0
-        b[n - 1] = thetaf
-        b[1:-1] = fluid_t[1:-1]
-
-        solution[j + 1, :] = solvers.tdma(A, b)
-        fluids[j + 1, :] = fluid_t
-
-    return taus, np.array(fluids), solution
 
 
 def solve_time_rk2(
@@ -187,26 +155,18 @@ def solve_time_rk2(
     c1 = 1.0 / (2.0 * weight)
     c2 = 1.0 - 1.0 / (2.0 * weight)
 
-    # create "A" matrix
-    A = np.empty((n, n))
-    # 1's corresponding to BC
-    A[0, 0] = 1.0
-    A[n - 1, n - 1] = 1.0
-    # interior grid points
-    for k in range(1, n - 1):
-        A[k, k] = -2.0 / h**2 - beta
-        A[k, k - 1] = 1.0 / h**2
-        A[k, k + 1] = 1.0 / h**2
+    A = get_A(n, beta, h) * -1.0
 
     for j, tau in enumerate(taus[1:]):
         fluid = fluid_eqn(tau, xi)
-        # set left, right boundary condition
-        fluid[0], fluid[n - 1] = 0.0, 0.0
+
         # store into fluid array
         fluids[j + 1, :] = fluid
 
         # "b" vector = beta * theta_fluid
         b = beta * fluid
+        # set left, right boundary
+        b[0], b[n - 1] = theta0, thetaf
         # predictor
         k1 = A @ solution[j] + b
         y1 = solution[j] + weight * t * k1
@@ -225,9 +185,49 @@ def solve_time_crank(
     theta0: float,
     thetaf: float,
     fluid_eqn: callable,
-    weight: float = 1.0,
 ) -> tuple:
-    pass
+    n = xi.shape[0]
+    m = taus.shape[0]
+
+    solution = np.empty(shape=(m, n))
+    fluids = np.empty(shape=(m, n))
+    # set initial fluid condition
+    fluids[0, :] = fluid_eqn(taus[0], xi)
+
+    # set IC
+    # get steady state A,b
+    ssA, ssb = get_Ab(xi, fluids[0], beta, theta0, thetaf)
+    # solve SS system to get tau=0 I.C.
+    ss_theta = solvers.tdma(ssA, ssb)
+    # first member of solution array is the I.C.
+    solution[0, :] = ss_theta
+
+    # xi step
+    h = (xi[n - 1] - xi[0]) / (n - 1)
+    # tau step
+    t = (taus[m - 1] - taus[0]) / (m - 1)
+
+    A = get_A(n, beta, h)
+    I = np.eye(n)
+
+    for j, tau in enumerate(taus[1:]):
+        fluid = fluid_eqn(tau, xi)
+        # store into fluid array
+        fluids[j + 1, :] = fluid
+
+        b1 = get_b(n, beta, theta0, thetaf)
+        b1[1 : n - 1] = fluids[j + 1, 1 : n - 1]
+        b0 = get_b(n, beta, theta0, thetaf)
+        b0[1 : n - 1] = fluids[j, 1 : n - 1]
+
+        c = (I - 0.5 * t * A) @ solution[j] + 0.5 * t * (b0 + b1)
+        B = I + 0.5 * t * A
+
+        sol = solvers.tdma(B, c)
+
+        solution[j + 1, :] = sol
+
+    return fluids, solution
 
 
 def get_sin_plume_fn(A: float, omega: float, xi0: float, sigma: float) -> callable:
@@ -254,7 +254,8 @@ def get_step_plume_fn(A, t1, t2, xi0, sigma, xi):
     return f
 
 
-def animate_results(xi, taus, fluids, solutions, skip=10):
+def animate_results(xi, taus, fluids, solutions, skip=10, interval=1):
+    """Make an animation of the temperature profile over time"""
     fig = plt.figure()
     ax = fig.add_subplot(111)
     (fluid,) = ax.plot([], [], "r-", label="Fluid")
@@ -286,131 +287,56 @@ def animate_results(xi, taus, fluids, solutions, skip=10):
         frames=list(range(taus.shape[0] // skip)),
         init_func=init,
         blit=True,
-        interval=4,
+        interval=interval,
     )
     return ani
 
 
+def make_contour_plt(
+    ax,
+    xi: np.ndarray,
+    tau: np.ndarray,
+    theta: np.ndarray,
+    title: str,
+):
+    """Make a 2d contour plot of the temperature profile over time"""
+    # get a grid of xy values
+    X, Y = np.meshgrid(tau, xi)
+    # theta should have the shape (tau,xi,1)
+    ax.contourf(Y.T, X.T, theta, levels=40, cmap="coolwarm")
+    ax.set_ylabel(r"$\tau$")
+    ax.set_xlabel(r"$\xi$")
+    ax.set_title(title)
+
+
 if __name__ == "__main__":
-    test1 = False
-    test2 = False
-    test3 = True
+    # test analytic solution against numerical solution
+    import solvers
+    import matplotlib.pyplot as plt
 
-    if test1:
-        # test analytic solution against numerical solution
-        import solvers
-        import matplotlib.pyplot as plt
+    beta = 4.0
+    fluid_temp = 5.0
+    theta0, thetaf = 4.0, 4.0
+    n = 256
+    xi = grid1d(0.0, 1.0, n)
 
-        beta = 4.0
-        fluid_temp = 5.0
-        theta0, thetaf = 4.0, 4.0
-        n = 256
-        xi = grid1d(0.0, 1.0, n)
+    # true
+    f = solve_ss_analytic(0.0, 1.0, fluid_temp, beta, theta0, thetaf)
+    theta_actual = f(xi)
+    A, b = get_Ab(xi, fluid_temp, beta, theta0, thetaf)
+    theta = solvers.tdma(A, b)
 
-        # true
-        f = solve_ss_analytic(0.0, 1.0, fluid_temp, beta, theta0, thetaf)
-        theta_actual = f(xi)
-        A, b = get_Ab(xi, fluid_temp, beta, theta0, thetaf)
-        theta = solvers.tdma(A, b)
+    # plume
+    fluid_temp = gaussian_plume(xi, 12.0, 0.3, 0.05)
+    A_, b_ = get_Ab(xi, fluid_temp, beta, theta0, thetaf)
+    theta_plume = solvers.tdma(A_, b_)
 
-        # plume
-        fluid_temp = gaussian_plume(xi, 12.0, 0.3, 0.05)
-        A_, b_ = get_Ab(xi, fluid_temp, beta, theta0, thetaf)
-        theta_plume = solvers.tdma(A_, b_)
+    fig, ax = plt.subplots(ncols=2)
+    ax[0].plot(xi, theta_actual, label="True")
+    ax[0].plot(xi, theta, label="Numerical")
 
-        fig, ax = plt.subplots(ncols=2)
-        ax[0].plot(xi, theta_actual, label="True")
-        ax[0].plot(xi, theta, label="Numerical")
-
-        ax[1].plot(xi, theta_plume, label="Temperature")
-        ax[1].plot(xi, fluid_temp, label="Fluid Temperature")
-        for a in ax:
-            a.legend()
-        plt.show()
-
-    if test2:
-        n = 256
-        tau = grid1d(0.0, 10.0, n)
-        xi = grid1d(0.0, 1.0, n)
-        beta = 100.0
-        theta0, thetaf = 0.0, 0.0
-        fluid_ss = 0.0
-        fluid_eqn = get_sin_plume_fn(5.0, 0.5, 0.3, 0.05)
-
-        taus, fluids, solution = solve_time_euler(
-            xi, tau, beta, theta0, thetaf, fluid_eqn
-        )
-        # make 2d grid of tau values
-        X, Y = np.meshgrid(xi, tau)
-        # theta is X,Y |-> Z
-        Ztheta = solution
-        Zfluid = fluids
-
-        fig = plt.figure()
-        ax0 = fig.add_subplot(121, projection="3d")
-        ax1 = fig.add_subplot(122, projection="3d")
-        for a in (ax0, ax1):
-            a.set_ylabel(r"$\tau$")
-            a.set_xlabel(r"$\xi$")
-            a.set_zlabel(r"$\theta$")
-        ax0.plot_surface(X, Y, Ztheta, cmap="coolwarm")
-        ax1.plot_surface(X, Y, Zfluid, cmap="Blues")
-
-        fig = plt.figure(figsize=(10, 5))
-        ax0 = fig.add_subplot(121)
-        ax1 = fig.add_subplot(122)
-        ax0.contour(X, Y, Ztheta, cmap="magma")
-        ax1.contour(X, Y, Zfluid, cmap="magma")
-        plt.show()
-
-    if test3:
-        n = 128
-        omega = 40
-
-        xi = grid1d(0.0, 1.0, n)
-        h = 1.0 / n
-        # tau = []
-        # t = 0.0
-        # for _ in range(0, 10000):
-        #     t += 0.25 * h**2
-        #     tau.append(t)
-        # tau = np.array(tau)
-        # print(f"dt = {tau[1] - tau[0]}")
-        tau = grid1d(0.0, 0.25, 10000)
-        beta = 4.0
-        theta0, thetaf = 0.0, 0.0
-        fluid_eqn2 = get_sin_plume_fn(5.0, omega, 0.3, 0.05)
-        fluid_eqn = get_step_plume_fn(5.0, 0.02, 0.08, 0.5, 0.25, xi)
-
-        fluids, solution = solve_time_rk2(xi, tau, beta, theta0, thetaf, fluid_eqn)
-        # make 2d grid of tau values
-        X, Y = np.meshgrid(xi, tau)
-        # theta is X,Y |-> Z
-        Ztheta = solution
-        Zfluid = fluids
-
-        # fig = plt.figure()
-        # ax0 = fig.add_subplot(121, projection="3d")
-        # ax1 = fig.add_subplot(122, projection="3d")
-        # for a in (ax0, ax1):
-        #     a.set_ylabel(r"$\tau$")
-        #     a.set_xlabel(r"$\xi$")
-        #     a.set_zlabel(r"$\theta$")
-        # ax0.plot_surface(X, Y, Ztheta, cmap="coolwarm")
-        # ax1.plot_surface(X, Y, Zfluid, cmap="Blues")
-
-        # fig = plt.figure(figsize=(10, 5))
-        # ax0 = fig.add_subplot(121)
-        # ax1 = fig.add_subplot(122)
-        # ax0.contour(X, Y, Ztheta, cmap="magma")
-        # ax1.contour(X, Y, Zfluid, cmap="magma")
-        # plt.show()
-
-        # fig, axs = plt.subplots(ncols=2)
-        # axs[0].plot(tau, fluids[:, 3])
-        # axs[1].plot(tau, solution[:, 3])
-        # plt.show()
-
-        ani = animate_results(xi, tau, fluids, solution)
-
-        plt.show()
+    ax[1].plot(xi, theta_plume, label="Temperature")
+    ax[1].plot(xi, fluid_temp, label="Fluid Temperature")
+    for a in ax:
+        a.legend()
+    plt.show()

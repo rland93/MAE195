@@ -4,7 +4,8 @@
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{caption,graphicx}
 \usepackage{hyperref,cleveref}
-\usepackage{derivative}
+\usepackage{physics}
+\usepackage{booktabs}
 \usepackage{changepage}
 \usepackage[backend=biber]{biblatex}
 % \addbibresource{hw4.bib}
@@ -15,6 +16,8 @@
 \title{MAE 195 Final Project S22}
 \begin{document}
     \maketitle
+    \tableofcontents
+    \listoffigures
     \section{Part A}
     \label{sec:parta}
     We have a steady state non-dimensional heat equation given by
@@ -92,15 +95,15 @@
     \end{equation}
     \begin{figure}
         \centering
-        \includegraphics[width=\textwidth]{figures/Temperature Distributions for Different Parameters.png}
-        \caption{Temperature distributions for different parameters. The maximum physicaly possible temperature in the fin is less than or equal to the temperature of the free fluid, or the temperature of the fin at its boundary condition, whichever is less. The maximum physically possible temperature can be seen by the dashed line. The dimensionless parameter $\beta \propto \frac{1}{k}$ represents the conductivity of the material. The dimensionless $\theta_f$ is the uniform temperature of the free stream. We see that higher values of $\beta$ correpond to the behavior of a less conductive fin, as we expect.}
+        \includegraphics[width=\textwidth]{figures/temp_dist_params.png}
+        \caption[Steady state fin temperature distributions for different parameters]{Temperature distributions for different parameters. The maximum physicaly possible temperature in the fin is less than or equal to the temperature of the free fluid, or the temperature of the fin at its boundary condition, whichever is less. The maximum physically possible temperature can be seen by the dashed line. The dimensionless parameter $\beta \propto \frac{1}{k}$ represents the conductivity of the material. The dimensionless $\theta_f$ is the uniform temperature of the free stream. We see that higher values of $\beta$ correpond to the behavior of a less conductive fin, as we expect.}
         \label{fig:TemperatureDistributions}
     \end{figure}
     This tridiagonal system can be solved quickly using the Thomas algorithm (TDMA) to obtain the full vector of temperatures. The solution for this system for several parameters is shown in \cref{fig:TemperatureDistributions}
     \begin{figure}
         \centering
-        \includegraphics[width=0.8\textwidth]{figures/RMS Error vs h.png}
-        \caption{The root mean squared error (RMSE) for a variety of grid spacings $h$. We can see that the approximation used in \cref{eq:Amatrixeqn} has truncation error on the order of $\mathcal{O}(h^2)$, as we expect.}
+        \includegraphics[width=0.8\textwidth]{figures/rms_error.png}
+        \caption[Error analysis of steady state fin temperatures]{The root mean squared error (RMSE) for a variety of grid spacings $h$. We can see that the approximation used in \cref{eq:Amatrixeqn} has truncation error on the order of $\mathcal{O}(h^2)$, as we expect.}
         \label{fig:RMSError}
     \end{figure}
     We compare the finite difference approximation to the exact solution for various grid sizes in \cref{fig:RMSError} and verify that the error is $\mathcal{O}(h^2)$. 
@@ -139,8 +142,8 @@
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.8\textwidth]{figures/Heat Flux, Step Size, beta.png}
-        \caption{The error in control volume heat flux as a function of $\beta$ for various methods of integration. The lower truncation error of the romberg methods is apparent in the plot; it is lower than that of composite trapezoid integration. However, there is a diminishing return; even though the order-6 Romberg integration is more accurate than the order-4 Romberg integration, the $\mathcal{O}(h^2)$ error of the finite difference method used in the conduction term begins to dominate. In order to achieve a lower error for the heat flux in the control volume, we would need to use a higher-order method for the differentiation term.}
+        \includegraphics[width=0.8\textwidth]{figures/heat_flux.png}
+        \caption[Heat flux of a control volume]{The error in control volume heat flux as a function of $\beta$ for various methods of integration. The lower truncation error of the romberg methods is apparent in the plot; it is lower than that of composite trapezoid integration. However, there is a diminishing return; even though the order-6 Romberg integration is more accurate than the order-4 Romberg integration, the $\mathcal{O}(h^2)$ error of the finite difference method used in the conduction term begins to dominate. In order to achieve a lower error for the heat flux in the control volume, we would need to use a higher-order method for the differentiation term.}
         \label{fig:integration5}
     \end{figure}
 
@@ -158,11 +161,11 @@
     The plume has magnitude $A$, is centered at $\xi_0$, and has a width corresponding to $\frac{1}{\sigma ^2}$.
     \begin{figure}
         \centering
-        \includegraphics[width=\textwidth]{figures/plume.png}
-        \caption{Numerical solution of the $\theta_f = f(\xi)$ fluid profile (blue) and the $\theta_f = 0$ fluid profile (orange). The temperature of the fluid is shown in red. On the top row, we have fluid temperature vs $\xi$. We can see that where the fluid is the highest temperature, the temperature of the fin commensurately rises. Bottom row shows heat flux. The heat energy passing into the fin from the plume flows through the fin towards the cold areas of the fluid, and towards the cold left boundary.}
+        \includegraphics[width=\textwidth]{figures/ss_spatial_variation.png}
+        \caption[Spatially varying temperature, heat flux distribution]{Numerical solution of the $\theta_f = f(\xi)$ fluid profile (blue) and the $\theta_f = 0$ fluid profile (orange). The temperature of the fluid is shown in red. On the top row, we have fluid temperature vs $\xi$. We can see that where the fluid is the highest temperature, the temperature of the fin commensurately rises. Bottom row shows heat flux. The heat energy passing into the fin from the plume flows through the fin towards the cold areas of the fluid, and towards the cold left boundary.}
         \label{fig:plume}
     \end{figure}
-    Although finding the analytic solution of the $\theta_f=f(\xi)$ problem may be difficult or impossible, the numerical solution is trivial: the procedure is the same regardless of the fluid temperature profile.
+    Although finding the analytic solution of the $\theta_f=f(\xi)$ problem may be difficult or impossible, the numerical solution is easy: the procedure is the same regardless of the fluid temperature profile. We need only substitute the $b$ vector.
     \section{Part C}
     Now we change the conditions so that the fluid temperature is also a function of time.
     \begin{equation}
@@ -170,13 +173,22 @@
         \label{eq:thetaf_dynamic}
     \end{equation}
     This represents a fluid with a plume centered at $\xi_0$, the temperature of which oscillates between $A$ and $-A$ in a sinusoidal fashion with a period $\omega$.
-    We can rewrite our governing equation:
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{figures/contour_time_rk2.png}
+        \caption[Explicit solution for time-dependent fin temperature]{Explicit Runge-Kutta solution to \cref{eq:governing_time}. Contour plot of the temperature of the fluid and fin over time over 3 $\theta_f$ cycles for $\omega=4$ (top) and $\omega=400$ (bottom). The Y-axis represents the non-dimensionalized time $\tau$, the x-axis represents the station along the fin $\xi$, and the color represents the temperature (red: hot, blue:cool). Left column: fluid temperature, right column: fin temperature; top row: $\omega=4$, bottom row: $\omega=400$. }
+        \label{fig:contour_time_rk2}
+    \end{figure}
+    We can rewrite our governing equation. The $\theta_{fluid \hspace{0.1cm} i,j}$ term, rather than being a steady-state function only of $\xi$, is now a function both of time and space, governed by \cref{eq:thetaf_dynamic}.
+    \subsection{Explicit Solution to Time-Dependent Fin Temperature}
+    \label{sec:explicit_time_rk2}
     \begin{equation}
-        \pdv{\theta}{\tau} = \pdv[2]{\theta}{\tau} + \beta (\theta_f - \theta)
+        \pdv{\theta}{\tau} = \pdv[2]{\theta}{\xi} + \beta \theta_f - \beta \theta
         \label{eq:governing_time}
     \end{equation}
     We can give the RHS of this equation a similar treatment as in \cref{sec:parta}:
     \begin{align}
+        \pdv{\theta}{\tau} &= \frac{\theta_{i-1} -2 \theta_i + \theta_{i-1}}{h^2}+ \beta \left(\theta_{f,i} - \theta_i \right) + \mathcal{O}(h^2) \\
         \pdv{\theta}{\tau} &= \frac{\theta_{i-1}}{h^2} + \frac{-2 \theta_i}{h^2} + \frac{\theta_{i-1}}{h^2}+ \beta \left(\theta_{f,i} - \theta_i \right) + \mathcal{O}(h^2) \\
         \pdv{\theta}{\tau} &= 
         \left(\frac{1}{h^2}\right) \theta_{i-1} + 
@@ -186,22 +198,22 @@
         \mathcal{O}(h^2)
         \label{eq:explicit_time}
     \end{align}
-    This produces a matrix equation similar to \cref{eq:Amatrixeqn}:
+    This produces a matrix equation of the form:
     \begin{equation}
         \pdv{\theta}{\tau} = -[A] \theta + b 
     \end{equation}
-    This equation is nearly identical to that of the equation in \cref{sec:parta}.
+    Upon expanding the terms of this equation, we can see that they are identical to those of \cref{sec:parta}. In fact, when $\pdv{\theta}{\tau} = 0$, this equation is identical to \cref{eq:ss_Axb}. When there is no time derivative in the sytem, we are solving a steady-state equation.
     \begin{adjustwidth}{-1cm}{-1cm}
         \begin{equation}
             \pdv{\theta}{\tau}
             =
             \begin{bmatrix}
-                1 & 0 & 0 & 0 & 0 & 0 \\
+                -1 & 0 & 0 & 0 & 0 & 0 \\
                 \frac{1}{h^2} & -\frac{2}{h^2} - \beta & \frac{1}{h^2} & 0 & 0 & 0 \\
                 0& \frac{1}{h^2} & -\frac{2}{h^2} - \beta & \frac{1}{h^2} & 0 & 0 \\
                 0&0&\frac{1}{h^2} & -\frac{2}{h^2} - \beta & \frac{1}{h^2} & 0\\
                 0&0&0&\frac{1}{h^2} & -\frac{2}{h^2} - \beta & \frac{1}{h^2} \\
-                0 & 0 & 0 & 0 & 0 & 1 
+                0 & 0 & 0 & 0 & 0 & -1 
             \end{bmatrix}
             \begin{bmatrix}
                 \theta_{(0, j)} \\
@@ -212,63 +224,55 @@
                 \theta_{(5, j)}
             \end{bmatrix}
             +
-            \beta
             \begin{bmatrix}
                 \theta_{(\xi=0,j)} \\
-                \theta_{(f,1,j)} \\
-                \theta_{(f,2,j)} \\
-                \theta_{(f,3,j)} \\
-                \theta_{(f,4,j)} \\
+                \beta \theta_{(f,1,j)} \\
+                \beta \theta_{(f,2,j)} \\
+                \beta \theta_{(f,3,j)} \\
+                \beta \theta_{(f,4,j)} \\
                 \theta_{(\xi=1,j)}
             \end{bmatrix}
             \label{eq:td_Axb}
         \end{equation}
     \end{adjustwidth}
-    With this formulation, we have the form $\pdv{\theta}{\tau} = f(\theta, \tau)$, which we can use any explicit method to solve.
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\textwidth]{figures/explicit_runtime.png}
+        \caption[Explicit method run-time analysis]{Runtime analysis of the explicit method. Y-axis shows runtime in seconds, and x-axis shows spatial grid size $n$.}
+        \label{fig:explicit_runtime}
+    \end{figure}
+    With this formulation, we have the form $\pdv{\theta}{\tau} = f(\theta, \tau)$, which we can use any explicit method to solve. We have three different boundary conditions: in order to increment time, we need the first state to be a fully fixed (steady state) condition, which can be ascertained by solving \cref{eq:ss_Axb} for $\left. \theta_f \right|_{\tau=0}$. The second and third boundary conditions are the left and right fin ends: $i=0$ and $i=n-1$, corresponding to the fixed temperature of the sink at $\xi=0$ and $\xi=1$. 
+    The solution is physically accurate for the step size $t=0.49 h^2$. We can see in \cref{fig:contour_time_rk2} that the behavior of the fin follows our physical intuition: the higher frequency fluid temperature oscillation does not allow enough time for the fin to absorb the heat, and hence the fin temperature is steadier than the lower-frequency temperature oscillation.
     
+    The same explicit method cannot be used to accurately solve the problem for a step size of $t>0.5 h^2$, because of stability issues in the explicit method. This can prove to be a significant obstacle in both runtime and memory, especially where the dimensionality of the problem increases, for example when a 2-D or 3-D temperature profile must be calculated.
 
+    To obtain the solution shown in \cref{fig:contour_time_rk2}, 166 steps were needed for the short period $\omega=400$ case. However, 16415 timesteps were needed to compute the long-period $\omega=4$ case, because the timestep size had to be kept small. The required small timestep makes the solution quite accurate, but the runtime can be a serious obstacle.
 
-    % \subsection{Explicit Method}
-    % With this time-dependent equation, we have two dimensions: a time dimension $\tau$, and a spatial dimension, $\xi$. Therefore, we can re-write our equation with two dimensions, $i$ and $j$. We will label the grid spacing in the $j$-dimension as $t$. The $i,j$-th entry of our equation can thus be re-written in terms of its discrete temporal and spatial neighbors:
-    % \begin{adjustwidth}{-1cm}{-1cm}
-    % \begin{equation}
-    %     \frac{-\theta_{i,j}+ \theta_{i,j+1} }{t} +\mathcal{O}(t) = \frac{\theta_{i-1,j}}{h^2} + \frac{-2 \theta_{i,j}}{h^2} + \frac{\theta_{i+1,j}}{h^2}+ \beta \left(\theta_{fluid \hspace{0.1cm} i,j} - \theta_{i,j} \right) + \mathcal{O}(h^2)
-    %     \label{eq:fd_time}
-    % \end{equation}
-    % \end{adjustwidth}
-    % The $\theta_{fluid \hspace{0.1cm} i,j}$ term, rather than being a steady-state function only of $\xi$, is now a function both of time and space, governed by \cref{eq:thetaf_dynamic}. Because we use a first-order finite-difference approximation in $\tau$, we have a corresponding first-order error in time.
-    % We can re-arrange and simplify \cref{eq:fd_time}:
-    % \begin{adjustwidth}{-2cm}{-2cm}
-    % \begin{align}
-    %     \frac{\theta_{i,j+1}}{t} &= \frac{\theta_{i,j}}{t} + \frac{\theta_{i-1,j}}{h^2} + \frac{-2 \theta_{i,j}}{h^2} + \frac{\theta_{i+1,j}}{h^2} - \beta \theta_{i,j} + \beta \theta_{fluid \hspace{0.1cm} i,j}  + \mathcal{O}(t) + \mathcal{O}(h^2) \\
-    %     \theta_{i,j+1} &= \theta_{i,j} + t \frac{\theta_{i-1,j}}{h^2} + t \frac{-2 \theta_{i,j}}{h^2} + t \frac{\theta_{i+1,j}}{h^2} - t \beta \theta_{i,j} + t \beta \theta_{fluid \hspace{0.1cm} i,j}  + t \mathcal{O}(t) + t \mathcal{O}(h^2) \\
-    %     \theta_{i, j+1} &= \left(\frac{t}{h^2}\right) \theta_{i-1,j} + \left( 1 - \frac{2 t}{h^2} - \beta t \right) \theta_{i,j} + \left(\frac{t}{h^2}\right) \theta_{i+1,j} + t \beta \theta_{fluid \hspace{0.1cm} i,j} + t \mathcal{O}(t) + t \mathcal{O}(h^2) 
-    %     \label{eq:fd_time}
-    % \end{align}
-    % \end{adjustwidth}
-    % This equation represents the relationship between a single grid point and all of its spatial and temporal neighbors. Notice that the state of a single grid point in the future ($j+1$) is dependent on both its state in the past ($i, j$), the effect of the fluid ($\theta_{(f, i, j)}$), and the prior state of its neighbors ($i-1, j$) and ($i+1, j$). Let us again write a matrix equation for $n=6$ system.
-    % In this case, we have three different boundary conditions: in order to increment time, we need the first state, $j=0$, to be a fully fixed (steady state) condition. The second boundary condition is the left and right fin ends: $i=0$ and $i=n-1$, corresponding to $\xi=0$ and $\xi=1$. The final boundary condition is the space and time-dependent equation of the fluid, corresponding to $\left(i=1,i=2, ... i=n-2 \right)$.
-    % Similar to \cref{eq:ss_Axb}, we can write \cref{eq:fd_time} in matrix form. For a single timestep, we have that 
-    
-    % This is a matrix equation of the form 
-    % \begin{equation}
-    %     \theta_{j+1} = [A] \theta_{j} + b_{j}
-    % \end{equation}
+    A runtime analysis of the explicit method can be found in \cref{fig:explicit_runtime}.
+    These severe stability downsides are addressed by the Crank-Nicolson method in the following section.
 
-    % Thus, the state of the system can be solved explicitly. We fix the entire $\theta$ vector at  $j=0$ by solving the steady state equation (whose form can be seen in \cref{eq:ss_Axb}). Then, to find some future state in time, we can get the time-dependent bounary condition $b_j$ and multiply the current state by A.
-
-    % This has some remarkable stability downsides, which we will work around in \cref{sec:implicit}
-
-
-    % \subsection{Implicit: Crank Nicholson}
-    % \label{sec:implicit}
-
-
-
-
-    
-
-
+    \subsection{"Semi-Implicit" Crank-Nicolson Solution to Time Dependent Fin Temperature}
+    \label{sec:implicit}
+    Rather than solving the governing equation explicitly, we can use the implicit Crank-Nicolson method, which alleviates the stability problems we saw in \cref{sec:explicit_time_rk2}. We begin with the matrix form of our governing equation:
+    \begin{equation*}
+        \pdv{\theta}{\tau} = -[A] \theta + b
+    \end{equation*}
+    We can obtain an approximation for the equation at the next timestep by formulating the quantity $\theta_{j+1}$ with the mid-point rule, which is the combination of the forward and backward Euler methods yielding $\mathcal{O}(h^2)$ error. Because the backward Euler method has an implicit dependence on the solution at $j+1$, solving this equation means solving a linear system $\theta_{j+1} = B \theta_{j} + c$ at each timestep.
+    \begin{align}
+        \frac{\theta_{j+1} - \theta_{j}}{t} &= \frac{1}{2} \left[ \left(\pdv{\theta}{\tau}\right)_{j} +  \left(\pdv{\theta}{\tau}\right)_{j+1}\right] \\
+        \frac{\theta_{j+1} - \theta_{j}}{t} &= \frac{1}{2} \left[ \left(-A \theta + b\right)_{j} + \left(-A \theta + b\right)_{j+1} \right] \\
+        \theta_{j+1} &= \theta_{j} + \frac{t}{2} \left[ \left(-A \theta + b\right)_{j} + \left(-A \theta + b\right)_{j+1} \right] \\
+        \theta_{j+1} &= \theta_{j} - \frac{t}{2} A \left( \theta_{j+1} + \theta_{j} \right) + \frac{1}{2} b \left( \theta_{j+1} + \theta_{j} \right) \\
+        \left( I + \frac{t}{2}  A \right) \theta_{j+1} &= \left( I - \frac{t}{2} A \right) \theta_{j} + \frac{t}{2} \left( b_{j+1} + b_{j} \right)
+        \label{eq:cn}
+    \end{align}
+    Since $A$ is tridiagonal, the matrix $\left( I + \frac{t}{2}  A \right)$ is also tridiagonal, and hence can be solved quickly. Although the method is iterative, because the value $\theta_{j+1}$ implicitly considered, it does not suffer from the same stability issues as the explicit method. The downside is the computational cost at each timestep (inverting the matrix, rather than a simple matrix multiplication). However, because the timestep can be made much larger than explicit RK2 method, Crank-Nicolson can give us solutions to otherwise infeasible problems.
+    The solutions in \cref{fig:contour_time_crank} took only 156 timesteps to compute, both for the $\omega=4$ case and the $\omega=400$ case -- significantly better than the explicit case above.
+    \begin{figure}
+        \includegraphics[width=0.9\textwidth]{figures/contour_time_crank.png}
+        \caption[Crank Nicolson solution to time-dependent fin temperature]{Solution to the time-dependent fin temperature problem. Y-axis shows dimensionless time $\tau$, while X-axis shows fin station $\xi$. The solution obtained from solving the problem witht the Crank-Nicolson method was as accurate as the explicit method, but the number of timesteps required was significantly smaller.}
+        \label{fig:contour_time_crank}
+    \end{figure}
 
     % \printbibliography
     
